@@ -88,7 +88,8 @@ export function RescueWorkspace({ initialData }: { initialData: any }) {
     try {
       const res = await fetch('/api/rescue/' + data.commitment.id, { method: 'DELETE' });
       if (res.ok) window.location.reload();
-    } catch (err) { console.error(err); }
+      else { const err = await res.json().catch(()=>({})); alert('Failed to reset: ' + (err.error || res.statusText)); }
+    } catch (err: any) { alert(err.message || 'Error'); console.error(err); }
     finally { setIsResetting(false); }
   };
 
@@ -100,7 +101,9 @@ export function RescueWorkspace({ initialData }: { initialData: any }) {
         body: JSON.stringify({ lost_minutes: 90 }),
       });
       if (res.ok) window.location.reload();
-    } finally { setIsRecovering(false); }
+      else { const err = await res.json().catch(()=>({})); alert('Failed to recover time: ' + (err.error || res.statusText) + '\n\nMake sure your GEMINI_API_KEY is added to Vercel!'); }
+    } catch (err: any) { alert(err.message || 'Error'); }
+    finally { setIsRecovering(false); }
   };
 
   const handleGenerate = async () => {
@@ -109,7 +112,9 @@ export function RescueWorkspace({ initialData }: { initialData: any }) {
     try {
       const res = await fetch('/api/rescue/artifacts/' + selectedArtifactId, { method: 'POST' });
       if (res.ok) window.location.reload();
-    } finally { setIsGenerating(false); }
+      else { const err = await res.json().catch(()=>({})); alert('Failed to generate artifact: ' + (err.error || res.statusText) + '\n\nMake sure your GEMINI_API_KEY is added to Vercel!'); }
+    } catch (err: any) { alert(err.message || 'Error'); }
+    finally { setIsGenerating(false); }
   };
 
   const handleBookCalendar = async () => {

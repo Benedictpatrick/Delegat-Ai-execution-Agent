@@ -91,9 +91,9 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
   const [addingLane, setAddingLane] = useState<string | null>(null);
   const [movingTask, setMovingTask] = useState<string | null>(null);
 
-  const handleDrop = async (e: React.DragEvent, laneId: string) => {
+  const handleDrop = async (e: React.DragEvent | any, laneId: string, explicitTaskId?: string) => {
     e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
+    const taskId = explicitTaskId || e.dataTransfer?.getData('taskId');
     if (!taskId) return;
     
     // Prevent redundant updates
@@ -102,14 +102,16 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
 
     setMovingTask(taskId);
     try {
-      await fetch(`/api/rescue/${commitmentId}/tasks/${taskId}`, {
+      const res = await fetch(`/api/rescue/${commitmentId}/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lane: laneId })
       });
-      onRefresh();
-    } catch (err) {
+      if (res.ok) onRefresh();
+      else { const err = await res.json().catch(()=>({})); alert('Failed to move task: ' + (err.error || res.statusText)); }
+    } catch (err: any) {
       console.error('Failed to move task:', err);
+      alert('Error moving task');
     } finally {
       setMovingTask(null);
     }
@@ -164,15 +166,25 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
                     onDragStart={(e) => e.dataTransfer.setData('taskId', t.id)}
                     style={{ 
                       display: 'flex', alignItems: 'flex-start', padding: '7px 5px', borderRadius: 7, gap: 4, cursor: 'grab',
-                      opacity: movingTask === t.id ? 0.5 : 1
+                      opacity: movingTask === t.id ? 0.5 : 1, position: 'relative'
                     }}
                     onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = '#f5f5f7')}
                     onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = 'transparent')}
                   >
+                    <select
+                      value={t.lane}
+                      onChange={(e) => handleDrop({ preventDefault: () => {} } as any, e.target.value, t.id)}
+                      style={{
+                        position: 'absolute', opacity: 0, left: 0, top: 0, width: '100%', height: '100%', cursor: 'pointer'
+                      }}
+                      title="Move task"
+                    >
+                      {LANES.map(l => <option key={l.id} value={l.id}>Move to {l.label}</option>)}
+                    </select>
                     <span style={{
                       flex: 1, fontSize: 13, fontWeight: 500, color: '#1d1d1f', letterSpacing: '-0.1px',
                       overflow: 'hidden', display: '-webkit-box',
-                      WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', pointerEvents: 'none'
                     }}>{t.title}</span>
                     <span style={{ width: 36, textAlign: 'center', fontSize: 12, color: '#6e6e73', flexShrink: 0 }}>
                       {t.estimated_minutes ?? t.estimatedMinutes ?? 0}m
