@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { RescueWorkspace } from '@/components/rescue/RescueWorkspace';
 import { getAdminClient, getDemoUserId } from '@/lib/supabase/admin';
 
+export const dynamic = 'force-dynamic';
+
 export default async function WarRoomPage() {
   const userId = await getDemoUserId().catch(() => null);
   let initialData = null;
