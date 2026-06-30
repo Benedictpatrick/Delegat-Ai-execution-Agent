@@ -89,6 +89,31 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
   tasks: any[]; commitmentId: string; onRefresh: () => void;
 }) {
   const [addingLane, setAddingLane] = useState<string | null>(null);
+  const [movingTask, setMovingTask] = useState<string | null>(null);
+
+  const handleDrop = async (e: React.DragEvent, laneId: string) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    if (!taskId) return;
+    
+    // Prevent redundant updates
+    const task = tasks.find(t => t.id === taskId);
+    if (task && task.lane === laneId) return;
+
+    setMovingTask(taskId);
+    try {
+      await fetch(`/api/rescue/${commitmentId}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lane: laneId })
+      });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to move task:', err);
+    } finally {
+      setMovingTask(null);
+    }
+  };
 
   return (
     <div style={{
@@ -111,7 +136,11 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
               flex: 1, minWidth: 240, padding: '16px 18px',
               borderLeft: lIdx > 0 ? '1px solid rgba(0,0,0,0.06)' : undefined,
               display: 'flex', flexDirection: 'column',
-            }}>
+              transition: 'background 0.2s',
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, lane.id)}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
                 <lane.Icon size={13} style={{ color: lane.accent, flexShrink: 0 }} />
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.1px', flex: 1 }}>
@@ -131,7 +160,12 @@ export function RescueBoard({ tasks, commitmentId, onRefresh }: {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {laneTasks.map(t => (
                   <div key={t.id}
-                    style={{ display: 'flex', alignItems: 'flex-start', padding: '7px 5px', borderRadius: 7, gap: 4, cursor: 'default' }}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData('taskId', t.id)}
+                    style={{ 
+                      display: 'flex', alignItems: 'flex-start', padding: '7px 5px', borderRadius: 7, gap: 4, cursor: 'grab',
+                      opacity: movingTask === t.id ? 0.5 : 1
+                    }}
                     onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = '#f5f5f7')}
                     onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = 'transparent')}
                   >
