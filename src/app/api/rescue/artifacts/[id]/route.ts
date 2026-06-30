@@ -3,7 +3,7 @@ import { getAdminClient, getDemoUserId } from '@/lib/supabase/admin';
 import { createMaker } from '@/lib/rescue/maker';
 import { logExecution } from '@/lib/rescue/repository';
 import { generateText } from '@/lib/rescue/ai';
-
+import { GoogleGenAI } from '@google/genai';
 async function generateWithAI(type: string, instructions: string): Promise<string> {
   const prompt = `You are the Delegat Maker Agent. Generate the requested artifact.
 Type: ${type}
@@ -60,7 +60,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       configTools.push({ googleSearch: {} });
     }
 
-    const ai = new (require('@google/genai').GoogleGenAI)({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const prompt = `You are the Delegat Maker Agent. Generate the requested artifact.
 Type: ${artifact.type}
 Instructions: ${artifact.instructions || artifact.title}
@@ -68,6 +68,13 @@ Instructions: ${artifact.instructions || artifact.title}
 Return markdown formatting only.`;
 
     const streamChannel = (supabase as any).channel(`artifact_stream_${id}`);
+    await new Promise((resolve) => {
+      streamChannel.subscribe((status: string) => {
+        if (status === 'SUBSCRIBED') resolve(true);
+      });
+      // Fallback resolve after 1s just in case
+      setTimeout(() => resolve(false), 1000);
+    });
     
     let content = '';
     try {
