@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { RescueWorkspace } from '@/components/rescue/RescueWorkspace';
 import { getAdminClient, getDemoUserId } from '@/lib/supabase/admin';
 
@@ -88,5 +89,9 @@ export default async function WarRoomPage() {
     }
   }
 
-  return <RescueWorkspace initialData={initialData} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RescueWorkspace initialData={initialData} />
+    </Suspense>
+  );
 }

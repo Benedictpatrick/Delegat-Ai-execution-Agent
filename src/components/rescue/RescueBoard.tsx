@@ -5,10 +5,10 @@ import { AlertCircle, Sparkles, User, Trash2, Plus, Loader2, Check, X } from 'lu
 const FF = "system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif";
 
 const LANES = [
-  { id: 'must_do',    label: 'Must do',     Icon: AlertCircle, accent: '#ff3b30' },
-  { id: 'ai_execute', label: 'AI executes', Icon: Sparkles,    accent: '#0066cc' },
-  { id: 'human_work', label: 'Human work',  Icon: User,        accent: '#3c3c43' },
-  { id: 'drop',       label: 'Drop',        Icon: Trash2,      accent: '#aeaeb2' },
+  { id: 'must_do', label: 'Must do', Icon: AlertCircle, accent: '#ff3b30' },
+  { id: 'ai_execute', label: 'AI executes', Icon: Sparkles, accent: '#0066cc' },
+  { id: 'human_work', label: 'Human work', Icon: User, accent: '#3c3c43' },
+  { id: 'drop', label: 'Drop', Icon: Trash2, accent: '#aeaeb2' },
 ];
 
 function fmtMins(mins: number) {

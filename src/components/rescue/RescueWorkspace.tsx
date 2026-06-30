@@ -1,6 +1,6 @@
 'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { RescueBriefForm } from './RescueBriefForm';
 import { PlanSummary } from './PlanSummary';
 import { RescueBoard } from './RescueBoard';
@@ -54,6 +54,7 @@ function NavBar({ right }: { right?: React.ReactNode }) {
 
 export function RescueWorkspace({ initialData }: { initialData: any }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [data] = useState(initialData);
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(
     initialData?.artifacts?.[0]?.id || null
@@ -62,6 +63,14 @@ export function RescueWorkspace({ initialData }: { initialData: any }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    const errorMsg = searchParams.get('error');
+    if (errorMsg) {
+      alert(errorMsg);
+      router.replace('/war-room');
+    }
+  }, [searchParams, router]);
 
   if (!data?.commitment) {
     return (

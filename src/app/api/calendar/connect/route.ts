@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
+  const url = new URL(request.url);
+  const returnTo = url.searchParams.get('returnTo') || '/war-room';
+
   if (!clientId) {
-    return NextResponse.json({ error: 'OAuth not configured' }, { status: 500 });
+    const errorUrl = new URL(returnTo, url.origin);
+    errorUrl.searchParams.append('error', 'Google Calendar OAuth is not configured in Vercel. Please use the "Book / Sync Calendar" button to download an .ics file instead.');
+    return NextResponse.redirect(errorUrl.toString());
   }
 
-  const url = new URL(request.url);
   const redirectUri = `${url.protocol}//${url.host}/api/calendar/callback`;
   
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -18,7 +22,6 @@ export async function GET(request: Request) {
   authUrl.searchParams.append('prompt', 'consent');
   
   // Save state (returnTo path)
-  const returnTo = url.searchParams.get('returnTo') || '/war-room';
   authUrl.searchParams.append('state', returnTo);
 
   return NextResponse.redirect(authUrl.toString());
