@@ -1,0 +1,20 @@
+
+> temp_app@0.1.0 dev E:\vibe2ship
+> next dev
+
+⚠ Port 3000 is in use by process 15356, using available port 3001 instead.
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.29.213:3001
+- Environments: .env.local
+✓ Ready in 845ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          15356
+- Dir:          E:\vibe2ship
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 15356 /F to stop it.
+[?25h
+ ELIFECYCLE  Command failed with exit code 1.
